@@ -1,0 +1,108 @@
+#!./node_modules/.bin/babel-node
+
+const path = require('path')
+const glob = require('glob')
+const fusebox = require('fuse-box')
+const {FuseBox, Sparky} = fusebox
+
+
+let fuse, ns={}, isProduction = false
+
+function listApplets() ::
+  return new Promise @ (resolve, reject) =>
+    glob.glob @ 'applets/*/index.js'
+      , @{} cwd: './code'
+      , (err, files) => err ? reject(err) : resolve(files)
+
+
+const babel_react_web_config = @:
+    sourceMaps: true
+  , presets: @[]
+        'react'
+      , ['jsy', { modules: false } ]
+
+  , plugins: @[] 'transform-node-env-inline', 'react-html-attrs'
+
+
+Sparky.task @ 'config', async () => ::
+  fuse = FuseBox.init @:
+      homeDir: 'code/'
+    , output: 'dist/$name.js'
+    //, debug: true, log: true
+    , hash: isProduction
+    , sourceMaps: !isProduction
+    , plugins: @[]
+      , fusebox.EnvPlugin @:
+            NODE_ENV: isProduction ? 'production' : 'development'
+
+      , fusebox.BabelPlugin @:
+            test: /code\/.*\.js(x|y)?$/
+          , config: babel_react_web_config
+
+      , fusebox.JSONPlugin()
+
+      , @[] 'code/**.css'
+          , fusebox.CSSPlugin @:
+                outFile: file => `dist/${file}`
+
+      , @[] 'node_modules/semantic-ui-css/**.css'
+
+          , fusebox.CSSResourcePlugin @:
+                dist: 'dist/css-resources'
+
+          , fusebox.CSSPlugin @:
+                outFile: file => `dist/css-resources/${file}`
+              , inject: file => `css-resources/${file}`
+
+      , fusebox.WebIndexPlugin @:
+          title: 'Sandbox Demo App'
+        , template: `./templates/index.html`
+
+      , isProduction && fusebox.UglifyESPlugin()
+
+
+  ns.vendor = fuse.bundle('vendor')
+    .instructions(`> vendor.js ~ root.js ~ applets/**/**.js`)
+
+  ns.app = fuse.bundle('app')
+
+  for const applet_root of await listApplets() ::
+    const applet_dir = path.dirname(applet_root)
+    const applet_name = path.basename(applet_dir)
+    ns.app = ns.app.split @ `${applet_dir}/**`, `${applet_name} > ${applet_root}`
+
+  ns.app = ns.app
+    .instructions(`!> [root.js] + [applets/**/**.js]`)
+
+
+// --
+
+Sparky.task @ 'clean', () =>
+  Sparky.src('./')
+    .clean @ 'dist/'
+    .clean @ '.fusebox/'
+    .exec()
+
+Sparky.task @ 'set-prod', () => ::
+  isProduction = true
+
+
+// --
+
+Sparky.task @ 'watch', ['config'], () => ::
+  fuse.dev()
+
+  for const bndl of Object.values(ns) ::
+    bndl.hmr().watch()
+
+  fuse.run()
+
+
+Sparky.task @ 'build-dev', ['clean', 'config'], () =>
+  fuse.run()
+
+Sparky.task @ 'build-prod', ['clean', 'set-production', 'config'], () =>
+  fuse.run()
+
+Sparky.task @ 'default', ['build-dev'], () => ::
+

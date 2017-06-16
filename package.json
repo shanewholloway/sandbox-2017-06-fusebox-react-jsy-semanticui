@@ -1,0 +1,41 @@
+{
+  "name": "sandbox-2017-06-fusebox-react-jsy-semanticui",
+  "private": true,
+  "description": "Sandbox demo combining technologies: FuseBox, React, JSY, and SemanticUI",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "fetchival-pluggable": "^0.5.2",
+    "object-functional": "^0.2.0",
+    "react": "^15.6.0",
+    "react-dom": "^15.6.1",
+    "semantic-ui-css": "^2.2.10",
+    "semantic-ui-react": "^0.68.5",
+    "zen-observable": "^0.5.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-plugin-react-html-attrs": "^2.0.0",
+    "babel-plugin-transform-node-env-inline": "^0.1.1",
+    "babel-preset-jsy": "^0.7.2",
+    "babel-preset-react": "^6.24.1",
+    "fuse-box": "^2.1.0",
+    "typescript": "^2.3.4",
+    "uglify-es": "^3.0.17"
+  },
+  "babel": {
+    "presets": "jsy/lean"
+  },
+  "scripts": {
+    "start": "npm -s run start:dev",
+    "start:dev": "npm -s run build:dev && npm -s run serve",
+    "start:prod": "npm -s run build:prod && npm -s run serve",
+    "serve": "cd ./dist && http-server",
+
+    "build": "npm -s run build:dev",
+    "build:dev": "babel-node fuse.jsy build-dev",
+    "build:prod": "babel-node fuse.jsy build-prod",
+
+    "watch": "babel-node fuse.jsy watch",
+    "clean": "babel-node fuse.jsy clean"
+  }
+}
