@@ -40,6 +40,7 @@
     "build:prod": "babel-node fuse.jsy build-prod",
     "watch:watch": "nodemon -w package.json -w fuse.jsy --exec babel-node ./fuse.jsy watch",
     "watch": "babel-node fuse.jsy watch",
-    "clean": "babel-node fuse.jsy clean"
+    "clean": "babel-node fuse.jsy clean",
+    "compile-fuse-js": "babel fuse.jsy > fuse.compiled.js"
   }
 }
