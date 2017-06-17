@@ -1,3 +1,5 @@
+window.SWH_FuseBox = FuseBox
+
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
@@ -22,9 +24,18 @@ const AppRoot = () => @
 
 
 import { lazyLoad } from 'fuse-tools'
-const loadApplet = appletName =>
-  lazyLoad @ appletName
 
+const loadApplet = appletName => ::
+  const path = `./applets/${appletName}`
+  if FuseBox.exists(path) ::
+    return Promise.resolve @ FuseBox.import(path)
+
+  return new Promise @ (resolve, reject) => ::
+    FuseBox.import @ `/some_namespace/applet-${appletName}.js`, () => ::
+      if ! FuseBox.exists(path) ::
+        return reject @ new Error @ `Unable to load applet "${appletName}"`
+
+      return resolve @ FuseBox.import(path)
 
 ::
   // start with an artificial random delay

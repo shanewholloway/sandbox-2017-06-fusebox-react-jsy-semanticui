@@ -5,6 +5,7 @@
   "license": "BSD-2-Clause",
   "dependencies": {
     "fetchival-pluggable": "^0.5.2",
+    "nodemon": "^1.11.0",
     "object-functional": "^0.2.0",
     "react": "^15.6.0",
     "react-dom": "^15.6.1",
@@ -30,11 +31,11 @@
     "start:dev": "npm -s run build:dev && npm -s run serve",
     "start:prod": "npm -s run build:prod && npm -s run serve",
     "serve": "cd ./dist && http-server",
-
     "build": "npm -s run build:dev",
     "build:dev": "babel-node fuse.jsy build-dev",
     "build:prod": "babel-node fuse.jsy build-prod",
 
+    "watch:watch": "nodemon -w package.json -w fuse.jsy --exec babel-node ./fuse.jsy watch",
     "watch": "babel-node fuse.jsy watch",
     "clean": "babel-node fuse.jsy clean"
   }

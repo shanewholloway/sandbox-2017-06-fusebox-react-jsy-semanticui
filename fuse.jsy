@@ -57,22 +57,26 @@ Sparky.task @ 'config', async () => ::
       , fusebox.WebIndexPlugin @:
           title: 'Sandbox Demo App'
         , template: `./templates/index.html`
+        , bundles: 'vendor root'.split @ /\s+/
 
       , isProduction && fusebox.UglifyESPlugin()
 
 
   ns.vendor = fuse.bundle('vendor')
-    .instructions(`> vendor.js ~ root.js ~ applets/**/**.js`)
+    .instructions @ `> vendor.js ~ root.js ~ applets/**/**.js`
+    //.instructions @ `> vendor.js ~ root.js`
 
-  ns.app = fuse.bundle('app')
+  ns.root = fuse.bundle('root')
+    .instructions(`!> [root.js] `)
 
   for const applet_root of await listApplets() ::
     const applet_dir = path.dirname(applet_root)
     const applet_name = path.basename(applet_dir)
-    ns.app = ns.app.split @ `${applet_dir}/**`, `${applet_name} > ${applet_root}`
-
-  ns.app = ns.app
-    .instructions(`!> [root.js] + [applets/**/**.js]`)
+    const applet_bundle = `applet-${applet_name}`
+    ns[applet_bundle] =
+      fuse.bundle(`some_namespace/${applet_bundle}`)
+        .instructions @ `! [${applet_dir}/**]`
+        //.instructions @ `! ${applet_dir}/**`
 
 
 // --
@@ -104,5 +108,5 @@ Sparky.task @ 'build-dev', ['clean', 'config'], () =>
 Sparky.task @ 'build-prod', ['clean', 'set-production', 'config'], () =>
   fuse.run()
 
-Sparky.task @ 'default', ['build-dev'], () => ::
+Sparky.task @ 'default', ['clean', 'build-dev'], () => ::
 
