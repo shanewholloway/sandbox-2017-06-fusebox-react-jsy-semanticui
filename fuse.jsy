@@ -5,7 +5,6 @@ const glob = require('glob')
 const fusebox = require('fuse-box')
 const {FuseBox, Sparky} = fusebox
 
-
 let fuse, ns={}, isProduction = false
 
 function listApplets() ::
@@ -23,6 +22,13 @@ const babel_react_web_config = @:
 
   , plugins: @[] 'transform-node-env-inline', 'react-html-attrs'
 
+const css_stack = @[]
+    fusebox.CSSResourcePlugin @:
+        dist: 'dist/css-resources'
+
+  , fusebox.CSSPlugin @:
+        outFile: file => `dist/css-resources/${file}`
+      , inject: file => `css-resources/${file}`
 
 Sparky.task @ 'config', async () => ::
   fuse = FuseBox.init @:
@@ -36,7 +42,7 @@ Sparky.task @ 'config', async () => ::
             NODE_ENV: isProduction ? 'production' : 'development'
 
       , fusebox.BabelPlugin @:
-            test: /code\/.*\.js(x|y)?$/
+            test: /code\/.*\.(j|e)s(x|y)?$/
           , config: babel_react_web_config
 
       , fusebox.JSONPlugin()
@@ -45,26 +51,20 @@ Sparky.task @ 'config', async () => ::
           , fusebox.CSSPlugin @:
                 outFile: file => `dist/${file}`
 
-      , @[] 'node_modules/semantic-ui-css/**.css'
-
-          , fusebox.CSSResourcePlugin @:
-                dist: 'dist/css-resources'
-
-          , fusebox.CSSPlugin @:
-                outFile: file => `dist/css-resources/${file}`
-              , inject: file => `css-resources/${file}`
+      , ['node_modules/codemirror/**.css'].concat @ css_stack
+      , ['node_modules/semantic-ui-css/**.css'].concat @ css_stack
 
       , fusebox.WebIndexPlugin @:
           title: 'Sandbox Demo App'
         , template: `./templates/index.html`
-        , bundles: 'vendor root'.split @ /\s+/
+        , bundles: @[] 'vendor', 'root'
 
       , isProduction && fusebox.UglifyESPlugin()
 
+  fuse.context.allowExtension @ '.es'
 
   ns.vendor = fuse.bundle('vendor')
-    .instructions @ `> vendor.js ~ root.js ~ applets/**/**.js`
-    //.instructions @ `> vendor.js ~ root.js`
+    .instructions @ `> vendor.js ~ root.js`
 
   ns.root = fuse.bundle('root')
     .instructions(`!> [root.js] `)
@@ -75,8 +75,8 @@ Sparky.task @ 'config', async () => ::
     const applet_bundle = `applet-${applet_name}`
     ns[applet_bundle] =
       fuse.bundle(`some_namespace/${applet_bundle}`)
-        .instructions @ `! [${applet_dir}/**]`
-        //.instructions @ `! ${applet_dir}/**`
+        //.instructions @ `! >[${applet_dir}/index.js] [${applet_dir}/**] `
+        .instructions @ `! ${applet_dir}/deps.es [${applet_dir}/**.js]`
 
 
 // --
@@ -93,11 +93,11 @@ Sparky.task @ 'set-prod', () => ::
 
 // --
 
-Sparky.task @ 'watch', ['config'], () => ::
+Sparky.task @ 'watch', ['clean', 'config'], () => ::
   fuse.dev()
 
   for const bndl of Object.values(ns) ::
-    bndl.hmr().watch()
+    bndl.watch().hmr()
 
   fuse.run()
 
@@ -108,5 +108,6 @@ Sparky.task @ 'build-dev', ['clean', 'config'], () =>
 Sparky.task @ 'build-prod', ['clean', 'set-production', 'config'], () =>
   fuse.run()
 
-Sparky.task @ 'default', ['clean', 'build-dev'], () => ::
+Sparky.task @ 'default', () => ::
+  console.log @ 'Choose a subtask — watch, clean, build-dev, build-prod'
 

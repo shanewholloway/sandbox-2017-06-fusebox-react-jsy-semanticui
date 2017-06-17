@@ -1,5 +1,9 @@
 window.Observable = require('zen-observable')
 
-require('object-functional')
+import 'object-functional'
 
-require('fetchival-pluggable')
+import 'fetchival-pluggable'
+
+import 'react'
+import 'semantic-ui-react'
+import 'semantic-ui-css/semantic.min.css'

@@ -1,4 +1,4 @@
-window.SWH_FuseBox = FuseBox
+window.Root_FuseBox = FuseBox
 
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
@@ -10,11 +10,15 @@ import {sleep, dom_timestamp} from './utilModule'
 
 
 const parts = @{}
-    top: <h3>Hello</h3>
+    pre_first: <h3>First:</h3>
   , first: null
-  , middle: <h3>Wait for it…</h3>
+  , pre_second: <h3>Second:</h3>
   , second: null
-  , bottom: <h3>Goodbye</h3>
+  , pre_third: <h3>Third:</h3>
+  , third: null
+  , pre_fourth: <h3>Fourth:</h3>
+  , fourth: null
+  , pre_clock: <h3>Clock:</h3>
   , clock: null
 
 
@@ -22,44 +26,10 @@ const parts = @{}
 const AppRoot = () => @
   React.createElement @ 'div', null, ... Object.values(parts)
 
-
-import { lazyLoad } from 'fuse-tools'
-
-const loadApplet = appletName => ::
-  const path = `./applets/${appletName}`
-  if FuseBox.exists(path) ::
-    return Promise.resolve @ FuseBox.import(path)
-
-  return new Promise @ (resolve, reject) => ::
-    FuseBox.import @ `/some_namespace/applet-${appletName}.js`, () => ::
-      if ! FuseBox.exists(path) ::
-        return reject @ new Error @ `Unable to load applet "${appletName}"`
-
-      return resolve @ FuseBox.import(path)
-
-::
-  // start with an artificial random delay
-  sleep @ Math.random() * 5000
-  .then @ () => loadApplet('first')
-  .then @ module => ::
-    parts.first = @
-      <div>
-        <module.default />
-        {dom_timestamp('Loaded at:')}
-      </div>
-    refresh()
-
-::
-  // start with an artificial random delay
-  sleep @ Math.random() * 5000
-  .then @ () => loadApplet('second')
-  .then @ module => ::
-    parts.second = @
-      <div>
-        <module.default />
-        {dom_timestamp('Loaded at:')}
-      </div>
-    refresh()
+if 1 :: sleepyLoadApplet @ 'first', 500
+if 1 :: sleepyLoadApplet @ 'second', 500
+if 1 :: sleepyLoadApplet @ 'third', 500
+if 1 :: sleepyLoadApplet @ 'fourth', 500
 
 ::
   const refreshClock = () => ::
@@ -75,3 +45,30 @@ function refresh() ::
   ReactDOM.render(<AppRoot/>, rootElem)
 
 refresh()
+
+
+async function loadApplet(appletName) ::
+  const path = `./applets/${appletName}`
+  if FuseBox.exists(path) ::
+    return Promise.resolve @ FuseBox.import(path)
+
+  return new Promise @ (resolve, reject) => ::
+    FuseBox.import @ `/some_namespace/applet-${appletName}.js`, () => ::
+      if ! FuseBox.exists(path) ::
+        return reject @ new Error @ `Unable to load applet "${appletName}"`
+
+      return resolve @ FuseBox.import(path)
+
+async function sleepyLoadApplet(appletName, ms_sleep) ::
+  // start with an artificial random delay
+  await sleep @ Math.random() * ms_sleep
+
+  const applet = await loadApplet @ appletName
+  parts[appletName] = @
+    <div>
+      <applet.default />
+      {dom_timestamp('Loaded at:')}
+    </div>
+
+  refresh()
+

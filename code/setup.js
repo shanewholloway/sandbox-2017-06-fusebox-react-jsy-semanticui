@@ -4,6 +4,9 @@ import { setStatefulModules } from 'fuse-box/modules/fuse-hmr'
 setStatefulModules @ name => ::
   if /^root[.\/]/.test @ name ::
     return true
-  if /stateful/.test @ name ::
+
+  if /deps/.test @ name ::
     return true
 
+  if /stateful/.test @ name ::
+    return true
