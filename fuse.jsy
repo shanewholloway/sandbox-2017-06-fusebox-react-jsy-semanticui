@@ -34,6 +34,8 @@ Sparky.task @ 'config', async () => ::
   fuse = FuseBox.init @:
       homeDir: 'code/'
     , output: 'dist/$name.js'
+    , target: 'browser'
+    , experimentalFeatures: true
     //, debug: true, log: true
     , hash: isProduction
     , sourceMaps: !isProduction
@@ -76,7 +78,7 @@ Sparky.task @ 'config', async () => ::
     ns[applet_bundle] =
       fuse.bundle(`some_namespace/${applet_bundle}`)
         //.instructions @ `! >[${applet_dir}/index.js] [${applet_dir}/**] `
-        .instructions @ `! ${applet_dir}/deps.es [${applet_dir}/**.js]`
+        .instructions @ `! ~${applet_dir}/deps.es [${applet_dir}/**.js] `
 
 
 // --

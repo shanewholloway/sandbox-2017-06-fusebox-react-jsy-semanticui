@@ -47,23 +47,11 @@ function refresh() ::
 refresh()
 
 
-async function loadApplet(appletName) ::
-  const path = `./applets/${appletName}`
-  if FuseBox.exists(path) ::
-    return Promise.resolve @ FuseBox.import(path)
-
-  return new Promise @ (resolve, reject) => ::
-    FuseBox.import @ `/some_namespace/applet-${appletName}.js`, () => ::
-      if ! FuseBox.exists(path) ::
-        return reject @ new Error @ `Unable to load applet "${appletName}"`
-
-      return resolve @ FuseBox.import(path)
-
 async function sleepyLoadApplet(appletName, ms_sleep) ::
   // start with an artificial random delay
   await sleep @ Math.random() * ms_sleep
 
-  const applet = await loadApplet @ appletName
+  const applet = await import(`./applets/${appletName}`)
   parts[appletName] = @
     <div>
       <applet.default />
