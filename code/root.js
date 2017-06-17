@@ -26,10 +26,10 @@ const parts = @{}
 const AppRoot = () => @
   React.createElement @ 'div', null, ... Object.values(parts)
 
-if 1 :: sleepyLoadApplet @ 'first', 500
-if 1 :: sleepyLoadApplet @ 'second', 500
-if 1 :: sleepyLoadApplet @ 'third', 500
-if 1 :: sleepyLoadApplet @ 'fourth', 500
+if 1 :: sleepyLoadApplet @ 'first', 500, import('first')
+if 1 :: sleepyLoadApplet @ 'second', 500, import('second')
+if 1 :: sleepyLoadApplet @ 'third', 500, import('third')
+if 1 :: sleepyLoadApplet @ 'fourth', 500, import('fourth')
 
 ::
   const refreshClock = () => ::
@@ -47,11 +47,18 @@ function refresh() ::
 refresh()
 
 
-async function sleepyLoadApplet(appletName, ms_sleep) ::
+async function sleepyLoadApplet(appletName, ms_sleep, applet) ::
   // start with an artificial random delay
   await sleep @ Math.random() * ms_sleep
 
-  const applet = await import(`./applets/${appletName}`)
+  applet = await applet
+  if undefined === applet ::
+    // option a
+    applet = await import(`./applets/${appletName}`)
+
+    if 0 :: // option b
+      applet = await import(appletName)
+
   parts[appletName] = @
     <div>
       <applet.default />
