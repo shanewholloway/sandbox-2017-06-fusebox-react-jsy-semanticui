@@ -1,5 +1,5 @@
-window.Root_FuseBox = FuseBox
-
+window.Root_FuseBox = typeof FuseBox !== "undefined" ? FuseBox : undefined;
+ 
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
