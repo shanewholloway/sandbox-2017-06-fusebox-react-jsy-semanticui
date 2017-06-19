@@ -1,5 +1,3 @@
-window.Root_FuseBox = typeof FuseBox !== "undefined" ? FuseBox : undefined;
- 
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
@@ -18,9 +16,6 @@ const parts = @{}
   , third: null
   , pre_fourth: <h3>Fourth:</h3>
   , fourth: null
-  , pre_clock: <h3>Clock:</h3>
-  , clock: null
-
 
 
 const AppRoot = () => @
@@ -31,14 +26,6 @@ if 1 :: sleepyLoadApplet @ 'second', 500, import('second')
 if 1 :: sleepyLoadApplet @ 'third', 500, import('third')
 if 1 :: sleepyLoadApplet @ 'fourth', 500, import('fourth')
 
-::
-  const refreshClock = () => ::
-    const ts = new Date()
-    parts.clock = dom_timestamp @ 'The current time is:'
-    refresh()
-
-  refreshClock()
-  setInterval @ refreshClock, 1000
 
 function refresh() ::
   const rootElem = document.getElementById('app')
@@ -52,12 +39,6 @@ async function sleepyLoadApplet(appletName, ms_sleep, applet) ::
   await sleep @ Math.random() * ms_sleep
 
   applet = await applet
-  if undefined === applet ::
-    // option a
-    applet = await import(`./applets/${appletName}`)
-
-    if 0 :: // option b
-      applet = await import(appletName)
 
   parts[appletName] = @
     <div>

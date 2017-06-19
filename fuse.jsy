@@ -5,8 +5,6 @@ const glob = require('glob')
 const fusebox = require('fuse-box')
 const {FuseBox, QuantumPlugin, Sparky} = fusebox
 
-const USE_SPLITTING = true
-
 let fuse, ns={}, isProduction = false
 
 function listApplets() ::
@@ -66,37 +64,21 @@ Sparky.task @ 'config', async () => ::
 
   fuse.context.allowExtension @ '.es'
 
-  if USE_SPLITTING ::
-    ns.vendor = fuse.bundle('vendor')
-      .instructions @ `vendor.js ~ root.js ~ applets/**/**.js`
+  ns.vendor = fuse.bundle('vendor')
+    .instructions @ `vendor.js ~ root.js ~ applets/**/**.js`
 
-    ns.app = fuse.bundle('app')
-  
-  else ::
-    ns.vendor = fuse.bundle('vendor')
-      .instructions @ `vendor.js ~ root.js`
-
-    ns.root = fuse.bundle('root')
-      .instructions(`!> [root.js] `)
+  ns.app = fuse.bundle('app')
 
   for const applet_root of await listApplets() ::
     const applet_dir = path.dirname(applet_root)
     const applet_name = path.basename(applet_dir)
     const applet_bundle = `applet-${applet_name}`
 
-    if USE_SPLITTING ::
-      ns.app = ns.app
-        .split @ `${applet_dir}/**`, `${applet_name} > ${applet_root}`
-
-    else ::
-      ns[applet_bundle] =
-        fuse.bundle(`some_namespace/${applet_bundle}`)
-          //.instructions @ `! >[${applet_dir}/index.js] [${applet_dir}/**] `
-          .instructions @ `! ~${applet_dir}/deps.es [${applet_dir}/**.js] `
-
-  if USE_SPLITTING ::
     ns.app = ns.app
-      .instructions(`!> [root.js] + [applets/**/**.js]`)
+      .split @ `${applet_dir}/**`, `${applet_name} > ${applet_root}`
+
+  ns.app = ns.app
+    .instructions(`!> [root.js] + [applets/**/**.js]`)
 
 // --
 
