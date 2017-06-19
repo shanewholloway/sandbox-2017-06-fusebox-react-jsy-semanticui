@@ -22,10 +22,11 @@
     "babel-plugin-transform-node-env-inline": "^0.1.1",
     "babel-preset-jsy": "^0.7.2",
     "babel-preset-react": "^6.24.1",
-    "fuse-box": "beta",
+    "fuse-box": "^2.2.0-beta.10",
     "nodemon": "^1.11.0",
     "typescript": "^2.3.4",
-    "uglify-es": "^3.0.17"
+    "uglify-es": "^3.0.17",
+    "uglify-js": "^3.0.18"
   },
   "babel": {
     "presets": "jsy/lean"

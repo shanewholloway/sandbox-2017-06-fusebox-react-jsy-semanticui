@@ -3,7 +3,7 @@
 const path = require('path')
 const glob = require('glob')
 const fusebox = require('fuse-box')
-const {FuseBox, Sparky} = fusebox
+const {FuseBox, QuantumPlugin, Sparky} = fusebox
 
 const USE_SPLITTING = true
 
@@ -22,7 +22,7 @@ const babel_react_web_config = @:
         'react'
       , ['jsy', { modules: false } ]
 
-  , plugins: @[] 'transform-node-env-inline', 'react-html-attrs'
+  , plugins: @[] 'react-html-attrs'
 
 const css_stack = @[]
     fusebox.CSSResourcePlugin @:
@@ -51,6 +51,8 @@ Sparky.task @ 'config', async () => ::
 
       , fusebox.JSONPlugin()
 
+      , isProduction && QuantumPlugin({ removeExportsInterop : false, treeshake : false })
+
       , @[] 'code/**.css'
           , fusebox.CSSPlugin @:
                 outFile: file => `dist/${file}`
@@ -61,21 +63,18 @@ Sparky.task @ 'config', async () => ::
       , fusebox.WebIndexPlugin @:
           title: 'Sandbox Demo App'
         , template: `./templates/index.html`
-        , bundles: @[] 'vendor', 'root', 'app'
-
-      , isProduction && fusebox.UglifyESPlugin()
 
   fuse.context.allowExtension @ '.es'
 
   if USE_SPLITTING ::
     ns.vendor = fuse.bundle('vendor')
-      .instructions @ `> vendor.js ~ root.js ~ applets/**/**.js`
+      .instructions @ `vendor.js ~ root.js ~ applets/**/**.js`
 
     ns.app = fuse.bundle('app')
   
   else ::
     ns.vendor = fuse.bundle('vendor')
-      .instructions @ `> vendor.js ~ root.js`
+      .instructions @ `vendor.js ~ root.js`
 
     ns.root = fuse.bundle('root')
       .instructions(`!> [root.js] `)
@@ -125,7 +124,7 @@ Sparky.task @ 'watch', ['clean', 'config'], () => ::
 Sparky.task @ 'build-dev', ['clean', 'config'], () =>
   fuse.run()
 
-Sparky.task @ 'build-prod', ['clean', 'set-production', 'config'], () =>
+Sparky.task @ 'build-prod', ['clean', 'set-prod', 'config'], () =>
   fuse.run()
 
 Sparky.task @ 'default', () => ::
